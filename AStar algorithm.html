@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> A* Algorithm</title>
+		<script>
+			var cvs, ctx;
+			var _map = [[0, 0, 0, 1],
+				[0, 1, 0, 0],
+				[0, 0, 0, 0],
+				[1, 1, 0, 0]],
+				r = 125, s = [0,0], f = [3,3], _roads, a = -1;
+			window.onload = function() {
+				cvs = document.getElementById('cvs');
+				ctx = cvs.getContext('2d');
+				drawMap();
+				drawSF();
+				getRoad();
+
+				for (let i = 0, l = _roads.length; i < l; i++){
+					console.log('\n' + ++a + ',' + _roads[a][1]);
+					for (let j = 0; j < 4; j++)
+						console.log(_roads[a][0][j].toString());
+				}
+			}
+			function drawMap() {
+				ctx.strokeStyle = 'black';
+				ctx.lineWidth = 2;
+				for (let y = 0, lenY = _map.length; y < lenY; y++) {
+					for (let x = 0, lenX = _map[y].length; x < lenX; x++) {
+						ctx.beginPath();
+						ctx.fillStyle = (_map[y][x] == 0 ? 'white' : 'gray');
+						ctx.rect(x * r, y * r, r, r);
+						ctx.fill(); ctx.stroke();
+						ctx.closePath();
+					}
+				}
+			}
+			function drawSF() {
+				ctx.beginPath();
+				ctx.fillStyle = '#f55';
+				ctx.font = '20px Georgia';
+				ctx.rect(s[0] * r, s[1] * r, r, r);
+				ctx.fill(); ctx.stroke();
+				ctx.fillStyle = '#000';
+				ctx.fillText('Start', s[0] * r + r/3, s[1] * r + 4 * r/7);
+				ctx.closePath();
+
+				ctx.beginPath();
+				ctx.fillStyle = '#5f5';
+				ctx.rect(f[0] * r, f[1] * r, r, r);
+				ctx.fill(); ctx.stroke();
+				ctx.fillStyle = '#000';
+				ctx.fillText('Finish', f[0] * r + 2 * r/7, f[1] * r + 4 * r/7);
+				ctx.closePath();
+			}
+			function getRoad() {
+				_roads = [];
+				let _moved = [], _moveNum = 0;
+				for (let y = 0, lenY = _map.length; y < lenY; y++) {
+					_moved[y] = [];
+					for (let x = 0, lenX = _map[y].length; x < lenX; x++) {
+						_moved[y].push((_map[y][x] + 1) * -1);
+					}
+				}
+				_moved[s[1]][s[0]] = 0
+				_moved[f[1]][f[0]] = 9999;
+				
+				goSearch(_moved, _moveNum);
+			}
+			function goSearch(_m, _moveNum) {
+				let _moved = [];
+				for (let y = 0, lenY = _m.length; y < lenY; y++) {
+					_moved[y] = [];
+					for (let x = 0, lenX = _m[y].length; x < lenX; x++)
+						_moved[y][x] = _m[y][x];
+				}
+
+				let sx = 0, sy = 0, fx = _moved[0].length-1, fy = _moved.length-1;
+				let nx = -1, ny = -1;//, imsi = 0;
+				
+				for (let y = 0, lenY = _moved.length; y < lenY; y++)
+					for (let x = 0, lenX = _moved[y].length; x < lenX; x++)
+						if (_moved[y][x] == _moveNum) { nx = x; ny = y; }
+
+				//Top
+				if (ny - 1 >= sy && (_moved[ny-1][nx] == -1 || _moved[ny-1][nx] == 9999)) {
+					//imsi = (fx - nx) + (fy - (ny - 1));
+					//imsi *= (imsi < 0 ? -1 : 1);
+					if (f[0] == nx && f[1] == ny-1) {
+						_roads.push([_moved, ++_moveNum]);
+						return;
+					} else {
+						_moved[ny-1][nx] = ++_moveNum;
+						goSearch(_moved, ++_moveNum);
+					}
+				}
+
+				//Right
+				if (nx + 1 <= fx && (_moved[ny][nx+1] == -1 || _moved[ny][nx+1] == 9999)) {
+					//imsi = (fx - (nx + 1)) + (fy - ny);
+					//imsi *= (imsi < 0 ? -1 : 1);
+					if (f[0] == nx+1 && f[1] == ny) {
+						_roads.push([_moved, ++_moveNum]);
+						return;
+					} else {
+						_moved[ny][nx+1] = ++_moveNum;
+						goSearch(_moved, ++_moveNum);
+					}
+				}
+
+				//Bottom
+				if (ny + 1 <= fy && (_moved[ny+1][nx] == -1 || _moved[ny+1][nx] == 9999)) {
+					//imsi = (fx - nx) + (fy - (ny + 1));
+					//imsi *= (imsi < 0 ? -1 : 1);
+					if (f[0] == nx && f[1] == ny+1) {
+						_roads.push([_moved, ++_moveNum]);
+						return;
+					} else {
+						_moved[ny+1][nx] = ++_moveNum;
+						goSearch(_moved, ++_moveNum);
+					}
+				}
+
+				//Left
+				if (nx - 1 >= sx && (_moved[ny][nx-1] == -1 || _moved[ny][nx-1] == 9999)) {
+					//imsi = (fx - (nx - 1)) + (fy - ny);
+					//imsi *= (imsi < 0 ? -1 : 1);
+					if (f[0] == nx-1 && f[1] == ny) {
+						_roads.push([_moved, ++_moveNum]);
+						return;
+					} else {
+						_moved[ny][nx-1] = ++_moveNum;
+						goSearch(_moved, ++_moveNum);
+					}
+				}
+			}
+		</script>
+	</head>
+	<body bgcolor='black'>
+		<canvas id='cvs' width='500px' height='500px' style='background: #fff; border: 1px green solid;' />
+	</body>
+</html>
