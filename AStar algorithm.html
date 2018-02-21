@@ -62,7 +62,7 @@
 						_moved[y].push((_map[y][x] + 1) * -1);
 					}
 				}
-				_moved[s[1]][s[0]] = 0
+				_moved[s[1]][s[0]] = 0;
 				_moved[f[1]][f[0]] = 9999;
 				
 				goSearch(_moved, _moveNum);
