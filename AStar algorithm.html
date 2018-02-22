@@ -3,18 +3,19 @@
 	<head>
 		<title> A* Algorithm</title>
 		<script>
-			var cvs, ctx, nway;
+			var cvs, ctx, nway, pway;
 			var _map = [[0, 0, 0, 1],
 				[0, 1, 0, 0],
 				[0, 0, 0, 0],
 				[1, 1, 0, 0]],
-				w = 0, h = 0, s = [0,0], f = [3,3], _roads, msX, msY;
+				w = 0, h = 0, s = [0,0], f = [3,3], _roads, msX, msY, auto;
 			window.onmousemove = function() {
 				msX = Math.floor((event.pageX - 8) / w);
 				msY = Math.floor((event.pageY - 8) / h);
 			}
 			window.onload = function() {
 				nway = document.getElementById('nway');
+				pway = document.getElementById('pway');
 				cvs = document.getElementById('cvs');
 				ctx = cvs.getContext('2d');
 
@@ -204,11 +205,15 @@
 				}
 			}
 			function _calRoad() {
+				clearInterval(auto);
+				pway.value = '¢º';
 				getRoad();
 				nway.value = 0;
 				_showRoad(0);
 			}
 			function _calBestRoad() {
+				clearInterval(auto);
+				pway.value = '¢º';
 				getRoad();
 				let sm = 9999, _broads = [];
 
@@ -225,16 +230,24 @@
 				_showRoad(0);
 			}
 			function _playArray() {
-				_showRoad(0);
-				let t = Number(nway.value);
-				setInterval(function() {
-					if (t < _roads.length-1) {
-						_showRoad(1);
-						t++;
-					} else {
-						clearInterval(this);
-					}
-				}, 500);
+				if (pway.value == '¢º') {
+					pway.value = '¡«';
+					clearInterval(auto);
+					_showRoad(0);
+					let t = Number(nway.value);
+					auto = setInterval(function() {
+						if (t < _roads.length-1) {
+							_showRoad(1);
+							t++;
+						} else {
+							pway.value = '¢º';
+							clearInterval(this);
+						}
+					}, 100);
+				} else if (pway.value == '¢º') {
+					pway.value = '¢º';
+					clearInterval(auto);
+				}
 			}
 		</script>
 	</head>
@@ -255,7 +268,7 @@
 					<br/><hr/>
 					<input type='text' id='nway' style='width:60px;' value='0' onkeydown='if(event.key == "Enter")_showRoad(0)'/> <br/>
 					<input type='button' value='<' style='width:20px;' onclick='_showRoad(-1)'/>
-					<input type='button' value='¢º' style='width:20px;' onclick='_playArray()'/>
+					<input type='button' id='pway' value='¢º' style='width:20px;' onclick='_playArray()'/>
 					<input type='button' value='>' style='width:20px;' onclick='_showRoad(1)'/>
 					</center>
 				</td>
