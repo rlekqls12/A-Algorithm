@@ -3,33 +3,35 @@
 	<head>
 		<title> A* Algorithm</title>
 		<script>
-			var cvs, ctx;
+			var cvs, ctx, nway;
 			var _map = [[0, 0, 0, 1],
 				[0, 1, 0, 0],
 				[0, 0, 0, 0],
 				[1, 1, 0, 0]],
-				r = 125, s = [0,0], f = [3,3], _roads, a = -1;
+				w = 0, h = 0, s = [0,0], f = [3,3], _roads, msX, msY;
+			window.onmousemove = function() {
+				msX = Math.floor((event.pageX - 8) / w);
+				msY = Math.floor((event.pageY - 8) / h);
+			}
 			window.onload = function() {
+				nway = document.getElementById('nway');
 				cvs = document.getElementById('cvs');
 				ctx = cvs.getContext('2d');
+
 				drawMap();
 				drawSF();
 				getRoad();
-
-				for (let i = 0, l = _roads.length; i < l; i++){
-					console.log('\n' + ++a + ',' + _roads[a][1]);
-					for (let j = 0; j < 4; j++)
-						console.log(_roads[a][0][j].toString());
-				}
 			}
 			function drawMap() {
+				w = cvs.width / _map[0].length;
+				h = cvs.height / _map.length;
 				ctx.strokeStyle = 'black';
-				ctx.lineWidth = 2;
+				ctx.lineWidth = 1;
 				for (let y = 0, lenY = _map.length; y < lenY; y++) {
 					for (let x = 0, lenX = _map[y].length; x < lenX; x++) {
 						ctx.beginPath();
 						ctx.fillStyle = (_map[y][x] == 0 ? 'white' : 'gray');
-						ctx.rect(x * r, y * r, r, r);
+						ctx.rect(x * w, y * h, w, h);
 						ctx.fill(); ctx.stroke();
 						ctx.closePath();
 					}
@@ -39,18 +41,18 @@
 				ctx.beginPath();
 				ctx.fillStyle = '#f55';
 				ctx.font = '20px Georgia';
-				ctx.rect(s[0] * r, s[1] * r, r, r);
+				ctx.rect(s[0] * w, s[1] * h, w, h);
 				ctx.fill(); ctx.stroke();
 				ctx.fillStyle = '#000';
-				ctx.fillText('Start', s[0] * r + r/3, s[1] * r + 4 * r/7);
+				ctx.fillText('S', s[0] * w, s[1] * h + 20);
 				ctx.closePath();
 
 				ctx.beginPath();
 				ctx.fillStyle = '#5f5';
-				ctx.rect(f[0] * r, f[1] * r, r, r);
+				ctx.rect(f[0] * w, f[1] * h, w, h);
 				ctx.fill(); ctx.stroke();
 				ctx.fillStyle = '#000';
-				ctx.fillText('Finish', f[0] * r + 2 * r/7, f[1] * r + 4 * r/7);
+				ctx.fillText('F', f[0] * w, f[1] * h + 20);
 				ctx.closePath();
 			}
 			function getRoad() {
@@ -69,74 +71,195 @@
 			}
 			function goSearch(_m, _moveNum) {
 				let _moved = [];
+				let sx = 0, sy = 0, fx = _m[0].length-1, fy = _m.length-1;
+				let nx = -1, ny = -1, tmp = 0;
+
 				for (let y = 0, lenY = _m.length; y < lenY; y++) {
 					_moved[y] = [];
-					for (let x = 0, lenX = _m[y].length; x < lenX; x++)
+					for (let x = 0, lenX = _m[y].length; x < lenX; x++) {
 						_moved[y][x] = _m[y][x];
-				}
-
-				let sx = 0, sy = 0, fx = _moved[0].length-1, fy = _moved.length-1;
-				let nx = -1, ny = -1;//, imsi = 0;
-				
-				for (let y = 0, lenY = _moved.length; y < lenY; y++)
-					for (let x = 0, lenX = _moved[y].length; x < lenX; x++)
 						if (_moved[y][x] == _moveNum) { nx = x; ny = y; }
+					}
+				}
+				
 
 				//Top
 				if (ny - 1 >= sy && (_moved[ny-1][nx] == -1 || _moved[ny-1][nx] == 9999)) {
-					//imsi = (fx - nx) + (fy - (ny - 1));
-					//imsi *= (imsi < 0 ? -1 : 1);
 					if (f[0] == nx && f[1] == ny-1) {
 						_roads.push([_moved, ++_moveNum]);
 						return;
 					} else {
-						_moved[ny-1][nx] = ++_moveNum;
-						goSearch(_moved, ++_moveNum);
+						tmp = _moved[ny-1][nx];
+						_moved[ny-1][nx] = _moveNum+1;
+						goSearch(_moved, _moveNum+1);
+						_moved[ny-1][nx] = tmp;
 					}
 				}
 
 				//Right
 				if (nx + 1 <= fx && (_moved[ny][nx+1] == -1 || _moved[ny][nx+1] == 9999)) {
-					//imsi = (fx - (nx + 1)) + (fy - ny);
-					//imsi *= (imsi < 0 ? -1 : 1);
 					if (f[0] == nx+1 && f[1] == ny) {
 						_roads.push([_moved, ++_moveNum]);
 						return;
 					} else {
-						_moved[ny][nx+1] = ++_moveNum;
-						goSearch(_moved, ++_moveNum);
+						tmp = _moved[ny][nx+1];
+						_moved[ny][nx+1] = _moveNum+1;
+						goSearch(_moved, _moveNum+1);
+						_moved[ny][nx+1] = tmp;
 					}
 				}
 
 				//Bottom
 				if (ny + 1 <= fy && (_moved[ny+1][nx] == -1 || _moved[ny+1][nx] == 9999)) {
-					//imsi = (fx - nx) + (fy - (ny + 1));
-					//imsi *= (imsi < 0 ? -1 : 1);
 					if (f[0] == nx && f[1] == ny+1) {
 						_roads.push([_moved, ++_moveNum]);
 						return;
 					} else {
-						_moved[ny+1][nx] = ++_moveNum;
-						goSearch(_moved, ++_moveNum);
+						tmp = _moved[ny+1][nx];
+						_moved[ny+1][nx] = _moveNum+1;
+						goSearch(_moved, _moveNum+1);
+						_moved[ny+1][nx] = tmp;
 					}
 				}
 
 				//Left
 				if (nx - 1 >= sx && (_moved[ny][nx-1] == -1 || _moved[ny][nx-1] == 9999)) {
-					//imsi = (fx - (nx - 1)) + (fy - ny);
-					//imsi *= (imsi < 0 ? -1 : 1);
 					if (f[0] == nx-1 && f[1] == ny) {
 						_roads.push([_moved, ++_moveNum]);
 						return;
 					} else {
-						_moved[ny][nx-1] = ++_moveNum;
-						goSearch(_moved, ++_moveNum);
+						tmp = _moved[ny][nx-1];
+						_moved[ny][nx-1] = _moveNum+1;
+						goSearch(_moved, _moveNum+1);
+						_moved[ny][nx-1] = tmp;
 					}
 				}
+			}
+			function _setMap() {
+				let what = prompt('4,4 = 4x4맵', _map[0].length + ',' + _map.length);
+				if (what == null) return;
+				what = what.split(',');
+				what[0] = Number(what[0]);
+				what[1] = Number(what[1]);
+
+				_map = [];
+				for (let y = 0, lenY = what[1]; y < lenY; y++) {
+					_map[y] = [];
+					for (let x = 0, lenX = what[0]; x < lenX; x++)
+						_map[y][x] = 0;
+				}
+				drawMap();
+				drawSF();
+				_roads = [];
+			}
+			function _setSF() {
+				let what = prompt('0,0,3,3\nS = (0,0), F = (3,3)', s[0] + ',' + s[1] + ',' + f[0] + ',' + f[1]);
+				if (what == null) return;
+				what = what.split(',');
+				what[0] = Number(what[0]);
+				what[1] = Number(what[1]);
+				what[2] = Number(what[2]);
+				what[3] = Number(what[3]);
+
+				s = [what[0],what[1]];
+				f = [what[2],what[3]];
+				_map[s[1]][s[0]] = 0;
+				_map[f[1]][f[0]] = 0;
+				drawMap();
+				drawSF();
+				_roads = [];
+			}
+			function _setWall() {
+				if (msX == s[0] && msY == s[1]) return;
+				if (msX == f[0] && msY == f[1]) return;
+				_map[msY][msX] = (_map[msY][msX] == 0 ? 1 : 0);
+				drawMap();
+				drawSF();
+				_roads = [];
+			}
+			function _showRoad(v) {
+				if (_roads == undefined || _roads == null || _roads.length == 0) return;
+				nway.value = Number(nway.value) + v;
+				if (Number(nway.value) < 0) nway.value = 0;
+				if (Number(nway.value) > _roads.length-1) nway.value = _roads.length-1;
+				let _groad = _roads[Number(nway.value)][0];
+
+				drawMap();
+				drawSF();
+				ctx.strokeStyle = 'black';
+				ctx.lineWidth = 1;
+				for (let y = 0, lenY = _groad.length; y < lenY; y++) {
+					for (let x = 0, lenX = _groad[y].length; x < lenX; x++) {
+						if (_groad[y][x] > 0 && _groad[y][x] < 9999) {
+							ctx.beginPath();
+							ctx.fillStyle = '#55f';
+							ctx.font = '20px Georgia';
+							ctx.rect(x * w, y * h, w, h);
+							ctx.fill(); ctx.stroke();
+							ctx.fillStyle = '#000';
+							ctx.fillText(_groad[y][x], x * w, y * h + 20);
+							ctx.closePath();
+						}
+					}
+				}
+			}
+			function _calRoad() {
+				getRoad();
+				nway.value = 0;
+				_showRoad(0);
+			}
+			function _calBestRoad() {
+				getRoad();
+				let sm = 9999, _broads = [];
+
+				for (let i = 0, lenY = _roads.length; i < lenY; i++)
+					if (_roads[i][1] < sm) sm = _roads[i][1];
+
+				for (let i = 0, lenY = _roads.length; i < lenY; i++) {
+					if (_roads[i][1] == sm) {
+						_broads.push(_roads[i]);
+					}
+				}
+				_roads = _broads;
+				nway.value = 0;
+				_showRoad(0);
+			}
+			function _playArray() {
+				_showRoad(0);
+				let t = Number(nway.value);
+				setInterval(function() {
+					if (t < _roads.length-1) {
+						_showRoad(1);
+						t++;
+					} else {
+						clearInterval(this);
+					}
+				}, 500);
 			}
 		</script>
 	</head>
 	<body bgcolor='black'>
-		<canvas id='cvs' width='500px' height='500px' style='background: #fff; border: 1px green solid;' />
+		<table>
+			<tr>
+				<td>
+					<canvas id='cvs' width='500px' height='500px' style='background: #fff; border: 1px green solid;' onclick='_setWall()'></canvas>
+				</td>
+				<td>
+					<center>
+					<input type='button' value='맵설정' onclick='_setMap()'/>
+					<br/><hr/>
+					<input type='button' value='S,F 설정' onclick='_setSF()'/>
+					<br/><hr/>
+					<input type='button' value='경로계산' onclick='_calRoad()'/> <br/>
+					<input type='button' value='최적경로' onclick='_calBestRoad()'/>
+					<br/><hr/>
+					<input type='text' id='nway' style='width:60px;' value='0' onkeydown='if(event.key == "Enter")_showRoad(0)'/> <br/>
+					<input type='button' value='<' style='width:20px;' onclick='_showRoad(-1)'/>
+					<input type='button' value='▶' style='width:20px;' onclick='_playArray()'/>
+					<input type='button' value='>' style='width:20px;' onclick='_showRoad(1)'/>
+					</center>
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>
