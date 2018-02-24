@@ -10,7 +10,7 @@
 				_roads, msX, msY,
 				round = 0, cmode = 0, nWall, money,
 				//이름 사거리 공격력 공속 가격
-				nTower, towers = [['SingleTower', 1, 10, 4, 50],
+				selectTowerXY, nTower, towers = [['SingleTower', 1, 10, 4, 50],
 						['DualTower', 1.5, 12, 3, 80]];
 			window.onmousemove = function() {
 				msX = Math.floor((event.pageX - 8) / w);
@@ -171,17 +171,11 @@
 			function _clickMode(v) {
 				if (v == 0) {
 					if (cmode == 0) _makeWall();
-					else if (cmode == 1) ;
+					else if (cmode == 1) _makeTower();
 				} else if (v == 1) {
 					cMode.value = (cmode == 0 ? '타워' : '땅');
 					cmode = (cmode == 0 ? 1 : 0);
-					if (cmode == 0)
-						towerParent.removeChild(towerDiv);
-					else if (cmode == 1) {
-						towerParent.appendChild(towerDiv);
-						nTower = 0;
-						_showTower(0);
-					}
+					if (cmode == 0 && towerParent.childElementCount == 1) towerParent.removeChild(towerDiv);
 				}
 			}
 			function _makeWall() {
@@ -195,6 +189,14 @@
 				_drawMap();
 				_drawSF();
 				_roads = [];
+			}
+			function _makeTower() {
+				towerParent.appendChild(towerDiv);
+				if (selectTowerXY == [msX, msY] && towerParent.childElementCount == 1)
+					towerParent.removeChild(towerDiv);
+				selectTowerXY = [msX, msY];
+				nTower = 0;
+				_showTower(0);
 			}
 			function _showTower(v) {
 				nTower += v;
