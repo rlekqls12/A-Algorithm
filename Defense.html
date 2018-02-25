@@ -191,9 +191,13 @@
 				_roads = [];
 			}
 			function _makeTower() {
+				if (_map[msY][msX] != 1) return;
 				towerParent.appendChild(towerDiv);
-				if (selectTowerXY == [msX, msY] && towerParent.childElementCount == 1)
+				if (selectTowerXY != null && selectTowerXY[0] == msX && selectTowerXY[1] == msY && towerParent.childElementCount == 1) {
+					selectTowerXY = null;
 					towerParent.removeChild(towerDiv);
+					return;
+				}
 				selectTowerXY = [msX, msY];
 				nTower = 0;
 				_showTower(0);
